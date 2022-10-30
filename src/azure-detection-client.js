@@ -2,11 +2,10 @@ const axios = require('axios').default;
 const { v4: uuidv4 } = require('uuid');
 
 require('dotenv').config();
-const key = process.env.API_KEY;
 const endpoint = process.env.ENDPOINT;
 const location = process.env.LOCATION;
 
-async function detectionClient(text) {
+async function detectionClient(text, key) {
     const response = await axios({
         baseURL: endpoint,
         url: '/detect',
