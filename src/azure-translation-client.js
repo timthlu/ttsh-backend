@@ -1,5 +1,6 @@
 const axios = require('axios').default;
 const { v4: uuidv4 } = require('uuid');
+const OutOfCharactersException = require('./outofcharacterexception.js');
 
 require('dotenv').config();
 const endpoint = process.env.ENDPOINT;
@@ -25,8 +26,12 @@ async function translationClient(text, lang, key) {
         }],
         responseType: 'json'
     });
-    
-    return response.data[0].translations[0].text;
+
+    if (response.status === 200) {
+        return response.data[0].translations[0].text;
+    } else if (response.status === 403) {
+        throw new OutOfCharactersException('Translation failed');
+    }
 }
 
 module.exports = translationClient;

@@ -1,5 +1,6 @@
 const axios = require('axios').default;
 const { v4: uuidv4 } = require('uuid');
+const OutOfCharactersException = require('./outofcharacterexception.js');
 
 require('dotenv').config();
 const endpoint = process.env.ENDPOINT;
@@ -25,7 +26,12 @@ async function detectionClient(text, key) {
         responseType: 'json'
     })
 
-    return response.data[0].language;
+    if (response.status === 200) {
+        return response.data[0].language;
+    } else if (response.status === 403) {
+        throw new OutOfCharactersException('Detection failed');
+    }
+    
 }
 
 module.exports = detectionClient;
