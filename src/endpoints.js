@@ -3,13 +3,8 @@ const cors = require('cors');
 const app = express();
 const port = 3000;
 
-const detectionClient = require('./azure-detection-client.js');
-const translationClient = require('./azure-translation-client.js');
-
-require('dotenv').config();
-var curKeyIndex = 0;
-var numKeys = process.env.NUM_STANDARD_KEYS;
-var curKey = process.env[`API_KEY_${curKeyIndex}`];
+const TTSService = require('./ttsservice.js');
+const ttsService = new TTSService();
 
 app.use(express.json());
 app.use(cors({
@@ -21,24 +16,13 @@ app.post('/api/detect', async (req, res) => {
         return res.status(400).json({error: 'Request needs a text (string) parameter'});
     }
 
-    //try all keys
-    for (let i = 0; i < numKeys; i++) {
-        try {
-            const lang = await detectionClient(req.body.text, curKey);
-            return res.json({lang: lang});
-        } catch (e) {
-            if (e.message === 'Detection failed') {
-                rotateKey();
-            } else {
-                throw new Error();
-            }
-        }
+    try {
+        const lang = await ttsService.detect(req.body.text);
+        return res.json({lang: lang});
+    } catch (e) {
+        //send message to discord bot about azure api failing
+        return res.status(500).json({error: e.message});
     }
-
-    //has not returned, set to pay as go
-    setToPayAsYouGoKey();
-    const lang = await detectionClient(req.body.text, curKey);
-    return res.json({lang: lang});
 });
 
 app.post('/api/translate', async (req, res) => {
@@ -50,24 +34,13 @@ app.post('/api/translate', async (req, res) => {
         return res.status(400).json({error: 'Request needs a lang (string) parameter'});
     }
 
-    //try all keys
-    for (let i = 0; i < numKeys; i++) {
-        try {
-            const translation = await translationClient(req.body.text, req.body.lang, curKey);
-            return res.json({translation: translation});
-        } catch (e) {
-            if (e.message === 'Translation failed') {
-                rotateKey();
-            } else {
-                throw new Error();
-            }
-        }
+    try {
+        const translation = await ttsService.translate(req.body.text, req.body.lang);
+        return res.json({translation: translation});
+    } catch (e) {
+        //send message to discord bot about azure api failing
+        return res.status(500).json({error: e.message});
     }
-
-    //has not returned, set to pay as go
-    setToPayAsYouGoKey();
-    const translation = await translationClient(req.body.text, req.body.lang, curKey);
-    return res.json({translation: translation});
 });
 
 // app.patch('/api/rotatekey', async (req, res) => {
@@ -82,22 +55,10 @@ app.post('/api/translate', async (req, res) => {
 // });
 
 app.patch('/api/resetkey', async(req, res) => {
-    curKeyIndex = 0;
-    curKey = process.env[`API_KEY_${curKeyIndex}`];
-
-    return res.json({key: curKeyIndex});
+    const key = ttsService.resetKey();
+    return res.json({key: key});
 });
 
 app.listen(port, () => {
     console.log('Server started on port', port);
 });
-
-function rotateKey() {
-    curKeyIndex = (curKeyIndex + 1) % numKeys;
-    curKey = process.env[`API_KEY_${curKeyIndex}`];
-}
-
-function setToPayAsYouGoKey() {
-    curKeyIndex = 0;
-    curKey = process.env[`PAY_AS_YOU_GO_KEY`];
-}

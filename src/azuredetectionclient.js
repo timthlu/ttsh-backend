@@ -1,6 +1,7 @@
 const axios = require('axios').default;
 const { v4: uuidv4 } = require('uuid');
-const OutOfCharactersException = require('./outofcharacterexception.js');
+const OutOfCharactersError = require('./outofcharacterserror.js');
+const AzureApiError = require('./azureapierror.js');
 
 require('dotenv').config();
 const endpoint = process.env.ENDPOINT;
@@ -24,14 +25,15 @@ async function detectionClient(text, key) {
             'text': text
         }],
         responseType: 'json'
-    })
+    });
 
     if (response.status === 200) {
         return response.data[0].language;
     } else if (response.status === 403) {
-        throw new OutOfCharactersException('Detection failed');
+        throw new OutOfCharactersError('Detection failed');
+    } else {
+        throw new AzureApiError('Azure API call failed');
     }
-    
 }
 
 module.exports = detectionClient;

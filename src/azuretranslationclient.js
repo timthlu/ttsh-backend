@@ -1,6 +1,7 @@
 const axios = require('axios').default;
 const { v4: uuidv4 } = require('uuid');
-const OutOfCharactersException = require('./outofcharacterexception.js');
+const OutOfCharactersError = require('./outofcharacterserror.js');
+const AzureApiError = require('./azureapierror.js');
 
 require('dotenv').config();
 const endpoint = process.env.ENDPOINT;
@@ -30,7 +31,9 @@ async function translationClient(text, lang, key) {
     if (response.status === 200) {
         return response.data[0].translations[0].text;
     } else if (response.status === 403) {
-        throw new OutOfCharactersException('Translation failed');
+        throw new OutOfCharactersError('Translation failed');
+    } else {
+        throw new AzureApiError('Azure API call failed');
     }
 }
 

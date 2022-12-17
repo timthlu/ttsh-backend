@@ -17,9 +17,14 @@ spec:
     spec: 
       containers:
       - name: ttsh-backend
-        image: ttshcontainerregistry.azurecr.io/ttsh-backend-image:v3
+        image: ttshcontainerregistry.azurecr.io/ttsh-backend-image:v4
         ports:
         - containerPort: 3000
+        envFrom:
+          - configMapRef:
+              name: ttsh-config-map
+          - secretRef:
+              name: ttsh-secret
 ---
 apiVersion: v1
 kind: Service
@@ -31,3 +36,13 @@ spec:
   - port: 3000
   selector:
     app: ttsh-backend
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ttsh-config-map
+data:
+  ENDPOINT: https://api.cognitive.microsofttranslator.com/
+  LOCATION: global
+  CUR_KEY: "0"
+  NUM_STANDARD_KEYS: "2"
