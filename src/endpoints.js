@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
 const app = express();
 const port = 3000;
 
@@ -8,7 +9,7 @@ const ttsService = new TTSService();
 
 app.use(express.json());
 app.use(cors({
-    origin: 'chrome-extension://klghgfebehhmnbhkmfdnlioodnccdmml'
+    origin: process.env.CORS_URL
 }));
 
 app.post('/api/detect', async (req, res) => {
