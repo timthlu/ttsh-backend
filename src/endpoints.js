@@ -8,10 +8,11 @@ const ttsService = new TTSService();
 
 app.use(express.json());
 app.use(cors({
-    origin: '*'
+    origin: 'chrome-extension://klghgfebehhmnbhkmfdnlioodnccdmml'
 }));
 
 app.post('/api/detect', async (req, res) => {
+    //console.log(req.get('origin'));
     if (!req.body.text) {
         return res.status(400).json({error: 'Request needs a text (string) parameter'});
     }
@@ -54,10 +55,10 @@ app.post('/api/translate', async (req, res) => {
 //     return res.json({key: curKeyIndex});
 // });
 
-app.patch('/api/resetkey', async(req, res) => {
-    const key = ttsService.resetKey();
-    return res.json({key: key});
-});
+// app.patch('/api/resetkey', async(req, res) => {
+//     const key = ttsService.resetKey();
+//     return res.json({key: key});
+// });
 
 app.listen(port, () => {
     console.log('Server started on port', port);

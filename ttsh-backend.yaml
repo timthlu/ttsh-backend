@@ -44,5 +44,3 @@ metadata:
 data:
   ENDPOINT: https://api.cognitive.microsofttranslator.com/
   LOCATION: global
-  CUR_KEY: "0"
-  NUM_STANDARD_KEYS: "2"
